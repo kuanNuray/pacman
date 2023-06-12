@@ -1,110 +1,3 @@
-/* pacman.js */
-
-/* level.js */
-function Block(X, Y, I) {
-	I = I || {};
-
-	I.X = X;
-	I.Y = Y;
-	I.w = 20;
-	I.h = 20;
-	I.type = 1;
-
-	I.draw = function() {
-		ctx.fillStyle="#521466";
-		ctx.fillRect(X, Y, I.h, I.w);
-	}
-
-	return I;
-}
-
-function Level(level) {
-	var I = 0;
-	var R = 0;
-	level.forEach(function(brick){
-		switch(brick) {
-			case 1:
-			blocks.push( new Block(I*20, R*20) );
-			break;
-			case 2:
-			blocks.push( new Dot(I*20, R*20) );
-			break;
-			case 3:
-			players.push( new Player(I*20, R*20) );
-			brick = 0;
-			break;
-			case 4:
-			blocks.push( new Pill(I*20, R*20) );
-			break;
-			case 5:
-			ghosts.push( new Ghost(I*20, R*20) );
-			brick = 0;
-			break;
-		}
-
-		if ( I == 39 ) {
-			R++;
-			I = 0;
-		} else {
-			I++;
-		}
-	});
-}
-
-/* player.js */
-function Player(X, Y, I) {
-	I = I || {};
-	I.startX = X;
-	I.startY = Y;
-	I.X = X;
-	I.Y = Y
-	I.h = 20;
-	I.w = 20;
-	I.direction = "r";
-	I.speed = 4;
-	I.pos = new Array();
-
-	var keysdisabled = new Array();
-
-	I.draw = function() {
-		ctx.fillStyle="yellow";
-		ctx.fillRect(I.X, I.Y, I.h, I.w);
-	}
-
-	I.update = function() {
-		switch(I.direction) {
-			case "r":
-			if ( I.X + I.speed >= c.width - I.w) {
-				I.X = 0;
-			} else {
-				I.X = I.X + I.speed;
-			}
-			break;
-			case "l":
-			if ( I.X + I.speed <= 0 ) {
-				I.X = c.width - I.w;
-			} else {
-				I.X = I.X - I.speed;
-			}
-			break;
-			case "u":
-			if ( I.Y + I.speed <= 0 ) {
-				I.direction = "s";
-				I.Y = 0;
-			} else {
-				I.Y = I.Y - I.speed;
-			}
-			break;
-			case "d":
-			if ( I.Y + I.speed >= c.height - I.h ) {
-				I.direction = "s";
-				I.Y = c.height - I.h;
-			} else {
-				I.Y = I.Y + I.speed;
-			}
-			break;
-		}
-		
 I.pos['me'] = getPosition(I.X,I.Y);
 		I.pos['above'] = I.pos['me'] - 40;
 		I.pos['below'] = I.pos['me'] + 40;
@@ -211,8 +104,6 @@ I.pos['me'] = getPosition(I.X,I.Y);
 	4 = Pill.
 	5 = Ghost.
 */
-
-
 var maps = Array();
 
 maps[0] = Array(
@@ -314,6 +205,7 @@ function Hud(X, Y, I) {
 
 	return I;
 }
+
 /* ghost.js */
 function Ghost(X, Y, I) {
 	I = I || {};
@@ -421,7 +313,8 @@ function Ghost(X, Y, I) {
 				I.direction = 's';
 			}
 		});
-// Manage the power count down.
+
+		// Manage the power count down.
 		if ( power == 1 ) {
 			var H = new Date();
 			if ( powerTimer == 0 ) powerTimer = H.getTime();
@@ -525,3 +418,87 @@ function collideDetect(player, block) {
 		Y = block.Y - player.h;
 		return {'X':X, 'Y':Y, 'D':'l'};
 	}
+	// Detect top collide.
+	if ( player.X == block.X && player.Y < block.Y + block.h && player.Y > block.Y ) {
+		X = player.X;
+		Y = block.Y + block.h;
+		return {'X':X, 'Y':Y, 'D':'l'};
+	}
+	return false;
+}
+
+function getPosition(X, Y) {
+	var blockX = (X / 20);
+	var blockY = (Y / 20);
+	var blockID = (blockY * 40) + blockX;
+	return blockID;
+
+}
+
+// A couple of function to detect key presses.
+var keydown = [];
+window.onkeydown = function(e) {
+	switch(e.keyCode) {
+		case 37:
+		keydown.Left = true;
+		break;
+		case 65:
+		keydown.Left = true;
+		break;
+		case 38:
+		keydown.Up = true;
+		break;
+        case 87:
+        keydown.Up = true;
+        break;
+		case 39:
+		keydown.Right = true;
+		break;
+		case 68:
+		keydown.Right = true;
+		break;
+		case 40:
+		keydown.Down = true;
+		break;
+		case 83:
+		keydown.Down = true;
+		break;
+		case 32:
+		keydown.Space = true;
+		break;
+	}
+}
+
+window.onkeyup = function(e) {
+	switch(e.keyCode) {
+		case 37:
+		keydown.Left = false;
+		break;
+		case 65:
+		keydown.Left = false;
+		break;
+		case 38:
+		keydown.Up = false;
+		break;
+        case 87:
+        keydown.Up = false;
+        break;
+		case 39:
+		keydown.Right = false;
+		break;
+		case 68:
+		keydown.Right = false;
+		break;
+		case 40:
+		keydown.Down = false;
+		break;
+		case 83:
+		keydown.Down = false;
+		break;
+		case 32:
+		keydown.Space = false;
+		break;
+	}
+}
+
+main();
