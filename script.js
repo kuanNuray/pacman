@@ -421,3 +421,107 @@ function Ghost(X, Y, I) {
 				I.direction = 's';
 			}
 		});
+// Manage the power count down.
+		if ( power == 1 ) {
+			var H = new Date();
+			if ( powerTimer == 0 ) powerTimer = H.getTime();
+			if ( H.getTime() > powerTimer + 10000 ) {
+				power = 0;
+				powerTimer = 0;
+			}
+		} 
+
+	}
+	return I;
+}
+
+/* engine.js */
+var c = document.getElementById('gameCanvas');
+var ctx = c.getContext("2d");
+var FPS = 30;
+
+var players		= new Array();
+var blocks		= new Array();
+var ghosts		= new Array();
+var hud 		= new Hud();
+var level   	= 0;
+var score   	= 0;
+var lives		= 3;
+var power		= 0;
+var powerTimer 	= 0;
+var paused		= 0;
+var remainingDots = 0;
+
+Level(maps[level]);
+
+function main()  {
+	setInterval(function() {
+		update();
+		draw();
+		}, 1000/FPS
+	);
+
+}
+
+function update() {
+	if ( paused == 1 ) return;
+	players.forEach(function(player){
+		player.update();
+	});
+
+	if ( remainingDots == 0 ) {
+		paused = 1;
+	} else {
+		remainingDots = 0;
+	}
+
+	ghosts.forEach(function(ghost){
+		ghost.update();
+	});
+}
+
+function draw() {
+	hud.draw();
+	if ( paused == 1 ) return;
+	ctx.fillStyle="#000000";
+	ctx.fillRect(0, 0, 800, 600);
+
+	blocks.forEach(function(block) {
+		block.draw();
+	});
+
+
+	players.forEach(function(player){
+		player.draw();
+	});
+
+	ghosts.forEach(function(ghost){
+		ghost.draw();
+	});
+
+
+	hud.draw();
+}
+
+function collideDetect(player, block) {
+	var X;
+	var Y;
+
+	// Detect left collide.
+	if ( player.Y == block.Y && player.X < block.X + block.w && player.X > block.X ) {
+		X = block.X + block.w;
+		Y = player.Y;
+		return {'X':X, 'Y':Y, 'D':'l'};
+	}
+	// Detect right collide.
+	if ( player.Y == block.Y && player.X + player.w > block.X && player.X < block.X + block.w ) {
+		X = block.X - player.w;
+		Y = player.Y;
+		return {'X':X, 'Y':Y, 'D':'l'};
+	}
+	// Detect bottom collide.
+	if ( player.X == block.X && player.Y + player.h > block.Y && player.Y + player.h < block.Y + block.h ) {
+		X = player.X;
+		Y = block.Y - player.h;
+		return {'X':X, 'Y':Y, 'D':'l'};
+	}
