@@ -314,3 +314,110 @@ function Hud(X, Y, I) {
 
 	return I;
 }
+/* ghost.js */
+function Ghost(X, Y, I) {
+	I = I || {};
+	I.X = X;
+	I.Y = Y;
+	I.startX = X;
+	I.startY = Y;
+	I.h = 20;
+	I.w = 20;
+	I.direction = "s";
+	I.speed = 4;
+	I.pos = new Array();
+
+	var keysdisabled = new Array();
+
+	I.draw = function() {
+		if ( power == 0 ){
+			ctx.fillStyle="red";
+			ctx.fillRect(I.X, I.Y, I.h, I.w);
+		} else if ( power == 1 ) {
+			ctx.fillStyle="blue";
+			ctx.fillRect(I.X, I.Y, I.h, I.w);
+		}
+	}
+
+	I.update = function() {
+		switch(I.direction) {
+			case "r":
+			if ( I.X + I.speed >= c.width - I.w) {
+				I.direction = "s";
+				I.X = c.width - I.w;
+			} else {
+				I.X = I.X + I.speed;
+			}
+			break;
+			case "l":
+			if ( I.X + I.speed <= 0 ) {
+				I.direction = "s";
+				I.X = 0;
+			} else {
+				I.X = I.X - I.speed;
+			}
+			break;
+			case "u":
+			if ( I.Y + I.speed <= 0 ) {
+				I.direction = "s";
+				I.Y = 0;
+			} else {
+				I.Y = I.Y - I.speed;
+			}
+			break;
+			case "d":
+			if ( I.Y + I.speed >= c.height - I.h ) {
+				I.direction = "s";
+				I.Y = c.height - I.h;
+			} else {
+				I.Y = I.Y + I.speed;
+			}
+			break;
+		}
+		
+		I.pos['me'] = getPosition(I.X,I.Y);
+		I.pos['above'] = I.pos['me'] - 40;
+		I.pos['below'] = I.pos['me'] + 40;
+		I.pos['right'] = I.pos['me'] + 1;	
+		I.pos['left']  = I.pos['me'] - 1;
+		
+
+		// Random AI for the ghost.
+		if ( I.X % 20 === 0 && I.Y % 20 === 0 ) {
+			var directions = new Array();
+			for ( var key in I.pos ) {
+				if ( maps[0][I.pos[key]] != 1 && key != "me") {
+					if ( I.direction == 'l' && key != 'right') directions.push(key);
+					if ( I.direction == 'r' && key != 'left') directions.push(key);
+					if ( I.direction == 'u' && key != 'below') directions.push(key);
+					if ( I.direction == 'd' && key != 'above') directions.push(key);
+					if ( I.direction == 's' ) directions.push(key);
+			}
+		}
+
+			var rnd = Math.floor( (Math.random()*directions.length) +0);
+			switch(directions[rnd]) {
+				case "right":
+				I.direction = "r";
+				break;
+				case "left":
+				I.direction = "l";
+				break;
+				case "above":
+				I.direction = "u";
+				break;
+				case "below":
+				I.direction = "d";
+				break;
+			}
+		}
+
+		blocks.forEach(function(block) {
+		var collide = collideDetect(I, block);
+			// Detect collision with wall.
+			if ( collide != false && block.type == 1) {
+				I.X = collide['X'];
+				I.Y = collide['Y'];
+				I.direction = 's';
+			}
+		});
