@@ -105,4 +105,109 @@ function Player(X, Y, I) {
 			break;
 		}
 		
+I.pos['me'] = getPosition(I.X,I.Y);
+		I.pos['above'] = I.pos['me'] - 40;
+		I.pos['below'] = I.pos['me'] + 40;
+		I.pos['right'] = I.pos['me'] + 1;	
+		I.pos['left']  = I.pos['me'] - 1;
 		
+		if ( I.X % 20 === 0 && I.Y % 20 === 0 ) {
+			if ( keydown.Right == true && maps[0][I.pos['right']] != 1 ) {
+				I.direction = "r";
+			}
+			if ( keydown.Left == true && maps[0][I.pos['left']] != 1 ) {
+				I.direction = "l";
+			}
+			if ( keydown.Up == true && maps[0][I.pos['above']] != 1 ) {
+				I.direction = "u";
+			}
+			if ( keydown.Down == true && maps[0][I.pos['below']] != 1 ) {
+				I.direction = "d";
+			}
+			if ( keydown.Space == true ) {
+			}
+		}
+
+		blocks.forEach(function(block) {
+		var collide = collideDetect(I, block);
+			// Count the remaining dots and pills.
+			if ( block.type == 2 || block.type == 4 ) {
+				if ( block.active == true ) remainingDots++;
+			}
+
+			// Detect collision with wall.
+			if ( collide != false && block.type == 1) {
+				I.X = collide['X'];
+				I.Y = collide['Y'];
+				I.direction = 'c';
+			}
+			// Detect collision with an active dot.
+			if ( collide != false && block.type == 2 && block.active == true ) {
+				block.collect();
+			}
+			// Detect collision with an active pill.
+			if ( collide != false && block.type == 4 && block.active == true ) {
+				block.collect();
+				power = 1;
+			}
+		});
+
+		ghosts.forEach(function(ghost){
+			// Detect collision with ghost.
+			var collide = collideDetect(I, ghost);
+			if ( collide != false  && power == 0) {
+				if ( lives == 0 ) paused = 1;
+				lives--;
+				I.X = I.startX;
+				I.Y = I.startY;
+				ghosts.forEach(function(ghost){
+					ghost.X = ghost.startX;
+					ghost.Y = ghost.startY;
+				});
+			} else if ( collide != false && power ==1 ){
+				ghost.X = ghost.startX;
+				ghost.Y = ghost.startY;
+				score += 100;
+			}
+		});
+
+	}
+	return I;
+}
+
+/* player2.js */
+(function () {
+	var Game = {};
+
+	Game.p = {	// Properties.
+		Xpos 		: 100,
+		Ypos 		: 100,
+		Height 		: 20,
+		Width 		: 20,
+		speed 		: 4,
+		direction 	: 0,
+		keysEnabled	: true
+	}
+
+	Game.main = function() {
+
+	}
+
+	Game.draw = function() {
+		
+	}
+
+	console.log(Game);
+
+})();
+
+/* maps.js */
+/*
+	Contains the map layouts.
+	0 = Blank space.
+	1 = Wall.
+	2 = Dot.
+	3 = Player.
+	4 = Pill.
+	5 = Ghost.
+*/
